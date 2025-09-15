@@ -5,7 +5,7 @@ import axios from 'axios';
 function EditProperty() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ title: '', city: '', price: '', description: '', image: '', images: '', available: true });
+  const [form, setForm] = useState({ title: '', city: '', price: '', bhk: '', areaName: '', lat: '', lng: '', description: '', image: '', images: '', available: true });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -20,6 +20,10 @@ function EditProperty() {
           title: res.data.title || '',
           city: res.data.city || '',
           price: res.data.price || '',
+          bhk: (typeof res.data.bhk === 'number' ? String(res.data.bhk) : ''),
+          areaName: res.data.areaName || '',
+          lat: res.data.location && Array.isArray(res.data.location.coordinates) ? String(res.data.location.coordinates[1]) : '',
+          lng: res.data.location && Array.isArray(res.data.location.coordinates) ? String(res.data.location.coordinates[0]) : '',
           description: res.data.description || '',
           image: res.data.image || '',
           images: res.data.images && Array.isArray(res.data.images) ? res.data.images.join('\n') : '',
@@ -51,10 +55,25 @@ function EditProperty() {
       const imagesArr = form.images
         ? form.images.split('\n').map(url => url.trim()).filter(Boolean)
         : [];
-      await axios.put(`${import.meta.env.VITE_API_URL}/properties/${id}`, {
-        ...form,
+      const payload = {
+        title: form.title,
+        city: form.city,
+        price: form.price,
+        bhk: form.bhk ? Number(form.bhk) : undefined,
+        areaName: form.areaName || undefined,
+        description: form.description,
+        image: form.image,
         images: imagesArr,
-      }, {
+        available: form.available,
+      };
+      if (form.lat && form.lng) {
+        const latNum = Number(form.lat);
+        const lngNum = Number(form.lng);
+        if (Number.isFinite(latNum) && Number.isFinite(lngNum)) {
+          payload.location = { type: 'Point', coordinates: [lngNum, latNum] };
+        }
+      }
+      await axios.put(`${import.meta.env.VITE_API_URL}/properties/${id}`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
       navigate('/my-properties');
@@ -76,6 +95,20 @@ function EditProperty() {
         <label>City
           <input name="city" value={form.city} onChange={handleChange} required />
         </label>
+        <label>BHK
+          <input name="bhk" type="number" value={form.bhk} onChange={handleChange} />
+        </label>
+        <label>Area / Locality
+          <input name="areaName" value={form.areaName} onChange={handleChange} />
+        </label>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <label style={{ flex: 1 }}>Latitude
+            <input name="lat" type="number" value={form.lat} onChange={handleChange} />
+          </label>
+          <label style={{ flex: 1 }}>Longitude
+            <input name="lng" type="number" value={form.lng} onChange={handleChange} />
+          </label>
+        </div>
         <label>Price
           <input name="price" type="number" value={form.price} onChange={handleChange} required />
         </label>

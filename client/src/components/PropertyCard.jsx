@@ -17,6 +17,9 @@ const PropertyCard = ({ property }) => {
         <img 
           src={property.image || '/placeholder-property.jpg'} 
           alt={property.title}
+          loading="lazy"
+          decoding="async"
+          fetchpriority="low"
           onError={(e) => {
             e.target.src = 'https://via.placeholder.com/400x300/667eea/ffffff?text=Property+Image';
           }}
@@ -52,4 +55,4 @@ const PropertyCard = ({ property }) => {
   );
 };
 
-export default PropertyCard;
+export default React.memo(PropertyCard);

@@ -50,20 +50,40 @@ router.get('/my-properties', verifyToken, async (req, res) => {
 // --- Get All Properties with Optional Filters ---
 router.get('/', async (req, res) => {
   try {
-    const { city, minPrice, maxPrice } = req.query;
+    const { city, minPrice, maxPrice, bhk, area, suggestNearby, lat, lng, radiusKm } = req.query;
 
     const filter = {};
     if (city) filter.city = new RegExp(city, 'i');
-    if (minPrice) filter.price = { ...filter.price, $gte: minPrice };
-    if (maxPrice) filter.price = { ...filter.price, $lte: maxPrice };
-
-    console.log('🔎 Client Query:', req.query);
-    console.log('🔍 Mongo Filter:', filter);
+    if (area) filter.areaName = new RegExp(area, 'i');
+    if (bhk) filter.bhk = Number(bhk);
+    if (minPrice) filter.price = { ...filter.price, $gte: Number(minPrice) };
+    if (maxPrice) filter.price = { ...filter.price, $lte: Number(maxPrice) };
 
     const properties = await Property.find(filter);
-    console.log('✅ Found Properties:', properties);
 
-    res.json(properties);
+    if (properties.length > 0 || suggestNearby !== 'true') {
+      return res.json(properties);
+    }
+
+    // If no results and suggestNearby is enabled and we have coords, fallback to nearby search
+    const latitude = lat ? Number(lat) : undefined;
+    const longitude = lng ? Number(lng) : undefined;
+    const maxDistanceMeters = Number(radiusKm || 5) * 1000; // default 5km
+
+    if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+      const nearby = await Property.find({
+        location: {
+          $near: {
+            $geometry: { type: 'Point', coordinates: [longitude, latitude] },
+            $maxDistance: maxDistanceMeters
+          }
+        }
+      });
+      res.set('X-Suggested', 'true');
+      return res.json(nearby);
+    }
+
+    return res.json([]);
   } catch (err) {
     console.error('Error fetching properties:', err.message);
     res.status(500).json({ error: 'Server error' });
