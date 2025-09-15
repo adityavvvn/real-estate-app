@@ -30,6 +30,11 @@ A full-stack real estate application built with React.js frontend and Node.js/Ex
 - Property availability status
 - Property booking system
 
+### 🔎 Advanced Search & Discovery
+- Filter by city, price range (dual-range slider), BHK (1/2/3/4 via pill buttons), and area/locality
+- Optional nearby suggestions when no exact matches are found (geospatial search by radius)
+- Quick-select radius pills (1/2/5/10/20 km) + custom radius
+
 ### 📧 Notifications & Communication
 - Real-time email notifications for property inquiries
 - In-app notification system
@@ -41,6 +46,8 @@ A full-stack real estate application built with React.js frontend and Node.js/Ex
 - Interactive property cards
 - Clean and intuitive navigation
 - Gradient backgrounds and smooth animations
+- Add Property page with two-column layout, image previews, geolocation button, and inline validation
+- Smooth scrolling improvements: image lazy-loading, component memoization, and content-visibility
 
 ## 🛠️ Tech Stack
 
@@ -68,12 +75,12 @@ A full-stack real estate application built with React.js frontend and Node.js/Ex
 ### User Journey
 1. **Landing Page** → Browse available properties
 2. **Registration/Login** → Create account or sign in
-3. **Property Listings** → View all properties with filters
+3. **Property Listings** → View all properties with filters (city, price slider, BHK pills, area, radius)
 4. **Property Details** → View detailed property information
 5. **Contact Owner** → Send inquiries via email
 6. **Book Viewing** → Schedule property viewings
 7. **My Properties** → Manage own property listings
-8. **Add Property** → List new properties for sale/rent
+8. **Add Property** → Two-column form, BHK pills, image previews, optional geolocation
 
 ### Data Flow
 ```
@@ -267,14 +274,14 @@ Open your browser and navigate to `http://localhost:5173`
 
 | Method | Endpoint | Description | Auth Required |
 |--------|----------|-------------|---------------|
-| GET | `/` | Get all properties (with filters) | No |
+| GET | `/` | Get all properties (with filters: city, minPrice, maxPrice, bhk, area, suggestNearby=true, lat, lng, radiusKm) | No |
 | GET | `/my-properties` | Get user's properties | Yes |
 | GET | `/:id` | Get single property | No |
 | POST | `/` | Add new property | Yes |
 | PUT | `/:id` | Update property | Yes |
 | DELETE | `/:id` | Delete property | Yes |
 | POST | `/:id/contact` | Contact property owner | No |
-| POST | `/:id/book-viewing` | Book property viewing | No |
+| POST | `/:id/book` | Book property viewing | No |
 
 ## 🗄️ Database Schema
 
@@ -301,6 +308,12 @@ Open your browser and navigate to `http://localhost:5173`
   description: String (required),
   price: Number (required),
   city: String (required),
+  bhk: Number,
+  areaName: String,
+  location: {
+    type: { type: String, enum: ['Point'] },
+    coordinates: [Number] // [lng, lat]
+  },
   image: String,
   images: [String],
   available: Boolean (default: true),
