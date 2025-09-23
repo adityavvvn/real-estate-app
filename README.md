@@ -34,6 +34,8 @@ A full-stack real estate application built with React.js frontend and Node.js/Ex
 - Filter by city, price range (dual-range slider), BHK (1/2/3/4 via pill buttons), and area/locality
 - Optional nearby suggestions when no exact matches are found (geospatial search by radius)
 - Quick-select radius pills (1/2/5/10/20 km) + custom radius
+- "Use my location" geolocation button with reverse geocoded city hint
+- Nearby-only mode when coordinates are provided (see `nearbyOnly` query)
 
 ### 📧 Notifications & Communication
 - Real-time email notifications for property inquiries
@@ -144,7 +146,7 @@ my-real-estate-app/
 │   │   ├── cloudinary.js           # Cloudinary configuration
 │   │   └── storage.js              # File storage utilities
 │   ├── controllers/                 # Route controllers (empty)
-│   ├── uploads/                     # File upload directory
+│   ├── uploads/                     # File upload directory (served at /uploads)
 │   ├── server.js                   # Main server file
 │   ├── package.json                # Backend dependencies
 │   └── package-lock.json
@@ -205,6 +207,7 @@ JWT_SECRET=your-super-secret-jwt-key-here
 # Email Configuration (for notifications)
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
+SMTP_SECURE=false
 SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
 SMTP_FROM=your-email@gmail.com
@@ -244,6 +247,10 @@ npm start
 
 The server will start on `http://localhost:5000`
 
+Notes:
+- Ensure the directory `server/uploads` exists for image uploads. Static files are served from `/uploads`.
+- Geospatial queries require MongoDB 2dsphere index (already defined on `Property.location`).
+
 ### 2. Start the Frontend Development Server
 
 ```bash
@@ -265,16 +272,12 @@ Open your browser and navigate to `http://localhost:5173`
 |--------|----------|-------------|---------------|
 | POST | `/register` | Register new user | No |
 | POST | `/login` | User login | No |
-| GET | `/notifications` | Get user notifications | Yes |
-| PUT | `/notifications/:id/read` | Mark notification as read | Yes |
-| DELETE | `/notifications/:id` | Delete notification | Yes |
-| PUT | `/notifications/read-all` | Mark all notifications as read | Yes |
 
 ### Property Routes (`/properties`)
 
 | Method | Endpoint | Description | Auth Required |
 |--------|----------|-------------|---------------|
-| GET | `/` | Get all properties (with filters: city, minPrice, maxPrice, bhk, area, suggestNearby=true, lat, lng, radiusKm) | No |
+| GET | `/` | Get all properties (filters: `city`, `minPrice`, `maxPrice`, `bhk`, `area`, `suggestNearby=true`, `lat`, `lng`, `radiusKm`, `nearbyOnly=true`) | No |
 | GET | `/my-properties` | Get user's properties | Yes |
 | GET | `/:id` | Get single property | No |
 | POST | `/` | Add new property | Yes |
@@ -282,6 +285,10 @@ Open your browser and navigate to `http://localhost:5173`
 | DELETE | `/:id` | Delete property | Yes |
 | POST | `/:id/contact` | Contact property owner | No |
 | POST | `/:id/book` | Book property viewing | No |
+
+Notes:
+- When no exact matches are found and `suggestNearby=true` with coordinates provided, the API returns nearby results and sets the response header `X-Suggested: true`.
+- If `nearbyOnly=true` is provided along with `lat`, `lng`, and `radiusKm`, only nearby results are returned.
 
 ## 🗄️ Database Schema
 

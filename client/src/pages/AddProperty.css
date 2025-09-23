@@ -151,6 +151,15 @@
   flex: 1;
 }
 
+.map-container {
+  width: 100%;
+  height: 260px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 8px 0 14px 0;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+}
+
 .btn-outline {
   width: 100%;
   padding: 12px 14px;

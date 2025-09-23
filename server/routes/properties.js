@@ -50,7 +50,7 @@ router.get('/my-properties', verifyToken, async (req, res) => {
 // --- Get All Properties with Optional Filters ---
 router.get('/', async (req, res) => {
   try {
-    const { city, minPrice, maxPrice, bhk, area, suggestNearby, lat, lng, radiusKm } = req.query;
+    const { city, minPrice, maxPrice, bhk, area, suggestNearby, lat, lng, radiusKm, nearbyOnly } = req.query;
 
     const filter = {};
     if (city) filter.city = new RegExp(city, 'i');
@@ -59,6 +59,25 @@ router.get('/', async (req, res) => {
     if (minPrice) filter.price = { ...filter.price, $gte: Number(minPrice) };
     if (maxPrice) filter.price = { ...filter.price, $lte: Number(maxPrice) };
 
+    // If caller explicitly requests nearby-only and has coordinates, run geospatial query combined with filters
+    const latitude = lat ? Number(lat) : undefined;
+    const longitude = lng ? Number(lng) : undefined;
+    const maxDistanceMeters = Number(radiusKm || 5) * 1000; // default 5km
+
+    if (nearbyOnly === 'true' && Number.isFinite(latitude) && Number.isFinite(longitude)) {
+      const geoQuery = {
+        ...filter,
+        location: {
+          $near: {
+            $geometry: { type: 'Point', coordinates: [longitude, latitude] },
+            $maxDistance: maxDistanceMeters
+          }
+        }
+      };
+      const nearbyOnlyResults = await Property.find(geoQuery);
+      return res.json(nearbyOnlyResults);
+    }
+
     const properties = await Property.find(filter);
 
     if (properties.length > 0 || suggestNearby !== 'true') {
@@ -66,12 +85,9 @@ router.get('/', async (req, res) => {
     }
 
     // If no results and suggestNearby is enabled and we have coords, fallback to nearby search
-    const latitude = lat ? Number(lat) : undefined;
-    const longitude = lng ? Number(lng) : undefined;
-    const maxDistanceMeters = Number(radiusKm || 5) * 1000; // default 5km
-
     if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
       const nearby = await Property.find({
+        ...filter,
         location: {
           $near: {
             $geometry: { type: 'Point', coordinates: [longitude, latitude] },

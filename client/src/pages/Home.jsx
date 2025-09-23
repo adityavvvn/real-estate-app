@@ -19,6 +19,7 @@ const Home = () => {
   });
   const [suggested, setSuggested] = useState(false);
   const [useCustomRadius, setUseCustomRadius] = useState(false);
+  const [detectedCity, setDetectedCity] = useState('');
   const PRICE_MIN = 0;
   const PRICE_MAX = 100000;
   const PRICE_STEP = 100;
@@ -42,6 +43,8 @@ const Home = () => {
       if (filters.lat && filters.lng) {
         params.append('lat', filters.lat);
         params.append('lng', filters.lng);
+        // Always restrict to nearby results when coordinates are provided
+        params.append('nearbyOnly', 'true');
       }
 
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/properties?${params}`);
@@ -74,12 +77,17 @@ const Home = () => {
     fetchProperties();
   };
 
-  const scrollToProperties = () => {
-    const el = document.getElementById('properties-section');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+  const scrollWithOffset = (elementId) => {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    const navbarOffset = 80; // account for sticky navbar height
+    const y = el.getBoundingClientRect().top + window.pageYOffset - navbarOffset;
+    window.scrollTo({ top: y, behavior: 'smooth' });
   };
+
+  const scrollToFilters = () => scrollWithOffset('filters-section');
+
+  const scrollToProperties = () => scrollWithOffset('properties-section');
 
   return (
     <div className="home-page">
@@ -93,11 +101,15 @@ const Home = () => {
             <p className="hero-subtitle text-center">
               Discover amazing properties in your favorite locations with our comprehensive real estate platform
             </p>
+            <div className="hero-actions">
+              <button type="button" className="cta-btn cta-primary" onClick={scrollToFilters}>🔎 Search Now</button>
+              <button type="button" className="cta-btn cta-ghost" onClick={scrollToProperties}>🏡 Explore Properties</button>
+            </div>
           </div>
         </section>
 
         {/* Filters Section */}
-        <section className="filters-section">
+        <section id="filters-section" className="filters-section">
           <div className="card">
             <h2 className="heading-3 mb-3">Search Properties</h2>
             <form onSubmit={handleFilterSubmit} className="filters-form">
@@ -246,45 +258,41 @@ const Home = () => {
                     />
                   )}
                 </div>
-                <div className="form-group">
-                  <label className="form-label">Latitude</label>
-                  <input
-                    type="number"
-                    name="lat"
-                    value={filters.lat}
-                    onChange={handleFilterChange}
-                    placeholder="Optional (auto-detect)"
-                    className="form-input"
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Longitude</label>
-                  <input
-                    type="number"
-                    name="lng"
-                    value={filters.lng}
-                    onChange={handleFilterChange}
-                    placeholder="Optional (auto-detect)"
-                    className="form-input"
-                  />
-                </div>
               </div>
 
               <div className="form-group" style={{ marginTop: 8 }}>
-                <button type="button" className="btn btn-outline" onClick={() => {
+                <button type="button" className="cta-btn cta-ghost" onClick={() => {
                   if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition((pos) => {
-                      setFilters(prev => ({ ...prev, lat: String(pos.coords.latitude), lng: String(pos.coords.longitude) }));
+                      const lat = String(pos.coords.latitude);
+                      const lng = String(pos.coords.longitude);
+                      setFilters(prev => ({ ...prev, lat, lng }));
+                      // Reverse geocode to get city label
+                      fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`)
+                        .then(r => r.json())
+                        .then(data => {
+                          const addr = data && data.address ? data.address : {};
+                          const cityLike = addr.city || addr.town || addr.village || addr.suburb || addr.hamlet || '';
+                          const stateLike = addr.state || addr.county || addr.country_code?.toUpperCase() || '';
+                          const label = cityLike ? `${cityLike}${stateLike ? ', ' + stateLike : ''}` : (addr.display_name || '');
+                          setDetectedCity(label);
+                        })
+                        .catch(() => setDetectedCity(''));
                     });
                   }
                 }}>📍 Use my location</button>
+                {detectedCity && (
+                  <div className="text-muted" style={{ marginTop: 6, fontSize: 13 }}>
+                    Detected: {detectedCity}
+                  </div>
+                )}
               </div>
               
               <div className="filters-actions">
-                <button type="submit" className="btn btn-primary">
+                <button type="submit" className="cta-btn cta-primary">
                   🔍 Search Properties
                 </button>
-                <button type="button" onClick={clearFilters} className="btn btn-outline">
+                <button type="button" onClick={clearFilters} className="cta-btn cta-ghost">
                   🗑️ Clear Filters
                 </button>
               </div>

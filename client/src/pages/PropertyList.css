@@ -105,7 +105,36 @@ html, body {
   margin-top: 0.5rem;
 }
 
-.card-actions .btn {
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
+/* Modern CTA buttons reused from Home styles */
+.cta-btn {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px 14px;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.2px;
+  position: relative;
+  transition: transform 120ms ease, box-shadow 220ms ease, opacity 200ms ease;
 }
+
+.cta-small { padding: 10px 14px; font-size: 0.85rem; }
+
+.cta-btn:active { transform: translateY(1px); }
+
+.cta-primary {
+  color: #fff;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  box-shadow: 0 10px 22px rgba(79,70,229,0.25);
+}
+
+.cta-primary:hover { box-shadow: 0 14px 30px rgba(79,70,229,0.32); opacity: 0.98; }
+
+.cta-danger {
+  color: #fff;
+  background: linear-gradient(135deg, #f97316 0%, #ef4444 100%);
+  box-shadow: 0 10px 22px rgba(239,68,68,0.25);
+}
+
+.cta-danger:hover { box-shadow: 0 14px 30px rgba(239,68,68,0.32); opacity: 0.98; }

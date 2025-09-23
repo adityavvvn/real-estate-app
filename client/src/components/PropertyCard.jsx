@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './PropertyCard.css';
 
@@ -11,11 +11,31 @@ const PropertyCard = ({ property }) => {
     }).format(price);
   };
 
+  const allImages = useMemo(() => {
+    const list = [];
+    const primary = property.image || '';
+    if (primary) list.push(primary);
+    if (Array.isArray(property.images)) {
+      for (const url of property.images) {
+        if (url && !list.includes(url)) list.push(url);
+      }
+    }
+    if (list.length === 0) list.push('/placeholder-property.jpg');
+    return list;
+  }, [property.image, property.images]);
+
+  const [activeIdx, setActiveIdx] = useState(0);
+  const mainImage = allImages[activeIdx] || '/placeholder-property.jpg';
+  const hasCarousel = allImages.length > 1;
+  const go = (dir) => {
+    setActiveIdx((i) => (i + dir + allImages.length) % allImages.length);
+  };
+
   return (
     <div className="property-card">
       <div className="property-image">
         <img 
-          src={property.image || '/placeholder-property.jpg'} 
+          src={mainImage} 
           alt={property.title}
           loading="lazy"
           decoding="async"
@@ -24,6 +44,23 @@ const PropertyCard = ({ property }) => {
             e.target.src = 'https://via.placeholder.com/400x300/667eea/ffffff?text=Property+Image';
           }}
         />
+        {hasCarousel && (
+          <>
+            <button className="carousel-btn prev" type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); go(-1); }} aria-label="Previous image">‹</button>
+            <button className="carousel-btn next" type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); go(1); }} aria-label="Next image">›</button>
+            <div className="carousel-dots">
+              {allImages.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  className={`dot ${idx === activeIdx ? 'active' : ''}`}
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveIdx(idx); }}
+                  aria-label={`Go to image ${idx + 1}`}
+                />
+              ))}
+            </div>
+          </>
+        )}
         <div className="property-overlay">
           <div className="property-status">
             {property.available ? (

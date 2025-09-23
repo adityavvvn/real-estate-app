@@ -1,11 +1,15 @@
 import React from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './AddProperty.css';
 
 export default function AddProperty() {
   const navigate = useNavigate();
+  const mapRef = useRef(null);
+  const markerRef = useRef(null);
+  const mapInitializedRef = useRef(false);
+  const [locating, setLocating] = useState(false);
   const [form, setForm] = useState({
     title: '',
     price: '',
@@ -29,6 +33,55 @@ export default function AddProperty() {
       navigate('/login');
     }
   }, [navigate]);
+
+  // Initialize Leaflet map once
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.L) return;
+    if (mapInitializedRef.current) return;
+
+    const L = window.L;
+    const initialLat = form.lat ? Number(form.lat) : 20.5937; // India approx center
+    const initialLng = form.lng ? Number(form.lng) : 78.9629;
+
+    const map = L.map('add-map', {
+      center: [initialLat, initialLng],
+      zoom: form.lat && form.lng ? 14 : 5,
+      scrollWheelZoom: false
+    });
+    mapRef.current = map;
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const marker = L.marker([initialLat, initialLng], { draggable: true }).addTo(map);
+    markerRef.current = marker;
+
+    marker.on('dragend', () => {
+      const pos = marker.getLatLng();
+      setForm(prev => ({ ...prev, lat: String(pos.lat.toFixed(6)), lng: String(pos.lng.toFixed(6)) }));
+    });
+
+    map.on('click', (e) => {
+      marker.setLatLng(e.latlng);
+      setForm(prev => ({ ...prev, lat: String(e.latlng.lat.toFixed(6)), lng: String(e.latlng.lng.toFixed(6)) }));
+    });
+
+    mapInitializedRef.current = true;
+  }, [form.lat, form.lng]);
+
+  // Keep map and marker in sync when lat/lng fields change or when using geolocation
+  useEffect(() => {
+    if (!mapInitializedRef.current || !mapRef.current || !markerRef.current) return;
+    const latNum = Number(form.lat);
+    const lngNum = Number(form.lng);
+    if (!Number.isFinite(latNum) || !Number.isFinite(lngNum)) return;
+    const current = markerRef.current.getLatLng();
+    if (Math.abs(current.lat - latNum) > 1e-6 || Math.abs(current.lng - lngNum) > 1e-6) {
+      markerRef.current.setLatLng([latNum, lngNum]);
+      mapRef.current.setView([latNum, lngNum], Math.max(mapRef.current.getZoom(), 14));
+    }
+  }, [form.lat, form.lng]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -191,17 +244,47 @@ export default function AddProperty() {
                 className="text-input flex-1"
               />
             </div>
+            <div id="add-map" className="map-container" />
             <button
               type="button"
-              onClick={() => {
-                if (navigator.geolocation) {
-                  navigator.geolocation.getCurrentPosition((pos) => {
-                    setForm(prev => ({ ...prev, lat: String(pos.coords.latitude), lng: String(pos.coords.longitude) }));
-                  });
+              onClick={async () => {
+                if (!navigator.geolocation) {
+                  setError('Geolocation is not supported by your browser.');
+                  return;
+                }
+                setLocating(true);
+                const getPosition = (options) => new Promise((resolve, reject) => {
+                  navigator.geolocation.getCurrentPosition(resolve, reject, options);
+                });
+                try {
+                  // Try high-accuracy first
+                  const pos = await getPosition({ enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+                  const { latitude, longitude, accuracy } = pos.coords;
+                  setForm(prev => ({ ...prev, lat: String(latitude), lng: String(longitude) }));
+                  // If accuracy is poor (>100m), try a quick fallback without high accuracy
+                  if (accuracy && accuracy > 100) {
+                    try {
+                      const pos2 = await getPosition({ enableHighAccuracy: false, timeout: 5000, maximumAge: 0 });
+                      const { latitude: lat2, longitude: lng2 } = pos2.coords;
+                      setForm(prev => ({ ...prev, lat: String(lat2), lng: String(lng2) }));
+                    } catch {}
+                  }
+                } catch (err) {
+                  // Fallback attempt (non high-accuracy)
+                  try {
+                    const pos = await getPosition({ enableHighAccuracy: false, timeout: 7000, maximumAge: 0 });
+                    const { latitude, longitude } = pos.coords;
+                    setForm(prev => ({ ...prev, lat: String(latitude), lng: String(longitude) }));
+                  } catch (err2) {
+                    setError('Unable to detect precise location. Please check permissions and GPS.');
+                  }
+                } finally {
+                  setLocating(false);
                 }
               }}
               className="btn-outline"
-            >📍 Use my location</button>
+              disabled={locating}
+            >{locating ? '📍 Locating…' : '📍 Use my location'}</button>
 
             <h3 className="section-title">Images</h3>
             <input

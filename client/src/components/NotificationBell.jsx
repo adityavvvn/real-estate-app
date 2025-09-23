@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './NotificationBell.css';
 
@@ -9,27 +9,56 @@ const NotificationBell = () => {
 
   const token = localStorage.getItem('token');
 
+  const pollTimeoutRef = useRef(null);
+  const isFetchingRef = useRef(false);
+
   useEffect(() => {
-    if (token) {
-      fetchNotifications();
-      
-      // Set up automatic refresh every 30 seconds
-      const interval = setInterval(() => {
-        fetchNotifications();
-      }, 30000); // Refresh every 30 seconds
-      
-      return () => clearInterval(interval);
-    }
+    if (!token) return;
+
+    const scheduleNextPoll = () => {
+      // jitter between 8-12s to avoid thundering herd
+      const delay = 8000 + Math.floor(Math.random() * 4000);
+      pollTimeoutRef.current = setTimeout(async () => {
+        await fetchNotifications();
+        scheduleNextPoll();
+      }, delay);
+    };
+
+    const handleFocus = async () => {
+      if (document.visibilityState === 'visible') {
+        clearTimeout(pollTimeoutRef.current);
+        await fetchNotifications();
+        scheduleNextPoll();
+      }
+    };
+
+    // initial fetch and start polling
+    fetchNotifications();
+    scheduleNextPoll();
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleFocus);
+
+    return () => {
+      clearTimeout(pollTimeoutRef.current);
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleFocus);
+    };
   }, [token]);
 
   const fetchNotifications = async () => {
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
     try {
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/auth/notifications`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       setNotifications(response.data);
     } catch (error) {
-      console.error('Error fetching notifications:', error);
+      // keep silent to avoid console spam; could add retry/backoff if needed
+      // console.error('Error fetching notifications:', error);
+    } finally {
+      isFetchingRef.current = false;
     }
   };
 

@@ -66,8 +66,8 @@ function MyProperties() {
               <p>{prop.city} — ₹{prop.price}</p>
               <p>{prop.description}</p>
               <div className="card-actions">
-                <button onClick={() => handleEdit(prop._id)} className="btn btn-primary">Edit</button>
-                <button onClick={() => handleDelete(prop._id)} className="btn btn-danger">Delete</button>
+                <button onClick={() => handleEdit(prop._id)} className="cta-btn cta-primary cta-small">✏️ Edit</button>
+                <button onClick={() => handleDelete(prop._id)} className="cta-btn cta-danger cta-small">🗑️ Delete</button>
               </div>
             </div>
           ))}
