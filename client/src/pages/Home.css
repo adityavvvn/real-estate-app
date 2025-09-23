@@ -173,3 +173,32 @@
 .filter-tag-remove:hover {
   background: rgba(255, 255, 255, 0.3);
 } 
+
+/* Floating Scroll Button */
+.scroll-to-properties {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  color: #ffffff;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 10px 24px rgba(29, 78, 216, 0.35);
+  font-size: 1.5rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.scroll-to-properties:hover {
+  filter: brightness(1.05);
+}
+
+.scroll-to-properties:active {
+  transform: translateY(1px);
+}

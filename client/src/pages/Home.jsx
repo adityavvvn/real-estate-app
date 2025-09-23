@@ -74,6 +74,13 @@ const Home = () => {
     fetchProperties();
   };
 
+  const scrollToProperties = () => {
+    const el = document.getElementById('properties-section');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <div className="home-page">
       <div className="container">
@@ -286,7 +293,7 @@ const Home = () => {
         </section>
 
         {/* Properties Section */}
-        <section className="properties-section">
+        <section id="properties-section" className="properties-section">
           <div className="section-header">
             <h2 className="heading-2">
               {loading ? 'Loading Properties...' : `Found ${properties.length} Properties`}
@@ -317,6 +324,15 @@ const Home = () => {
           )}
         </section>
       </div>
+      <button
+        type="button"
+        className="scroll-to-properties"
+        onClick={scrollToProperties}
+        aria-label="Scroll to properties"
+        title="Scroll to properties"
+      >
+        ↓
+      </button>
     </div>
   );
 };

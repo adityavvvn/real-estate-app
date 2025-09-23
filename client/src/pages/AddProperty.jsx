@@ -2,6 +2,7 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import './AddProperty.css';
 
 export default function AddProperty() {
   const navigate = useNavigate();
@@ -84,32 +85,14 @@ export default function AddProperty() {
   };
 
   return (
-    <div
-      style={{
-        backgroundImage: 'url(https://images.unsplash.com/photo-1600585154340-be6161a56a0c)',
-        backgroundSize: 'cover',
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}
-    >
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          padding: '2rem',
-          borderRadius: '10px',
-          boxShadow: '0 0 10px rgba(0,0,0,0.3)',
-          width: '820px'
-        }}
-      >
-        <h2 style={{ textAlign: 'center', marginBottom: '1rem' }}>Add Property</h2>
-        <div style={{ marginBottom: 8, color: '#555', fontSize: 12 }}>Required fields are marked with *</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+    <div className="add-container">
+      <form onSubmit={handleSubmit} className="add-card">
+        <h2 className="add-title">Add Property</h2>
+        <div className="add-subtitle">Required fields are marked with *</div>
+        <div className="add-grid">
           {/* Left column: Basic Details */}
           <div>
-            <h3 style={{ margin: '0.5rem 0' }}>Basic Details</h3>
+            <h3 className="section-title">Basic Details</h3>
             <input
               type="text"
               name="title"
@@ -117,7 +100,7 @@ export default function AddProperty() {
               value={form.title}
               onChange={handleChange}
               required
-              style={{ width: '100%', marginBottom: '1rem', padding: '0.5rem' }}
+              className="text-input"
             />
             <input
               type="number"
@@ -126,7 +109,7 @@ export default function AddProperty() {
               value={form.price}
               onChange={handleChange}
               required
-              style={{ width: '100%', marginBottom: '1rem', padding: '0.5rem' }}
+              className="text-input"
             />
             <input
               type="text"
@@ -135,23 +118,17 @@ export default function AddProperty() {
               value={form.city}
               onChange={handleChange}
               required
-              style={{ width: '100%', marginBottom: '1rem', padding: '0.5rem' }}
+              className="text-input"
             />
-            <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', marginBottom: 6 }}>BHK</label>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <div className="chips-group">
+              <label className="chips-label">BHK</label>
+              <div className="chips">
                 {['', '1', '2', '3', '4'].map((val) => (
                   <button
                     key={val || 'any'}
                     type="button"
                     onClick={() => { setShowCustomBhk(false); setForm(prev => ({ ...prev, bhk: val })); }}
-                    className="btn"
-                    style={{
-                      backgroundColor: (form.bhk === val && !showCustomBhk) ? '#2563eb' : 'transparent',
-                      color: (form.bhk === val && !showCustomBhk) ? '#fff' : 'inherit',
-                      border: '1px solid #2563eb',
-                      padding: '6px 10px'
-                    }}
+                    className={`chip ${form.bhk === val && !showCustomBhk ? 'chip-active' : ''}`}
                   >
                     {val ? `${val} BHK` : 'Any'}
                   </button>
@@ -159,13 +136,7 @@ export default function AddProperty() {
                 <button
                   type="button"
                   onClick={() => setShowCustomBhk(true)}
-                  className="btn"
-                  style={{
-                    backgroundColor: showCustomBhk ? '#2563eb' : 'transparent',
-                    color: showCustomBhk ? '#fff' : 'inherit',
-                    border: '1px solid #2563eb',
-                    padding: '6px 10px'
-                  }}
+                  className={`chip ${showCustomBhk ? 'chip-active' : ''}`}
                 >Custom</button>
               </div>
               {showCustomBhk && (
@@ -175,7 +146,7 @@ export default function AddProperty() {
                   placeholder="Enter BHK"
                   value={form.bhk}
                   onChange={handleChange}
-                  style={{ width: '100%', marginTop: 8, padding: '0.5rem' }}
+                  className="text-input"
                 />
               )}
             </div>
@@ -185,15 +156,15 @@ export default function AddProperty() {
               placeholder="Area / Locality (optional)"
               value={form.areaName}
               onChange={handleChange}
-              style={{ width: '100%', marginBottom: '1rem', padding: '0.5rem' }}
+              className="text-input"
             />
-            <label style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+            <label className="checkbox-row">
               <input
                 type="checkbox"
                 name="available"
                 checked={form.available}
                 onChange={handleChange}
-                style={{ marginRight: 8 }}
+                className="checkbox"
               />
               Available
             </label>
@@ -201,15 +172,15 @@ export default function AddProperty() {
 
           {/* Right column: Location, Images, Description */}
           <div>
-            <h3 style={{ margin: '0.5rem 0' }}>Location</h3>
-            <div style={{ display: 'flex', gap: 8 }}>
+            <h3 className="section-title">Location</h3>
+            <div className="row-gap">
               <input
                 type="number"
                 name="lat"
                 placeholder="Latitude (optional)"
                 value={form.lat}
                 onChange={handleChange}
-                style={{ flex: 1, marginBottom: '1rem', padding: '0.5rem' }}
+                className="text-input flex-1"
               />
               <input
                 type="number"
@@ -217,7 +188,7 @@ export default function AddProperty() {
                 placeholder="Longitude (optional)"
                 value={form.lng}
                 onChange={handleChange}
-                style={{ flex: 1, marginBottom: '1rem', padding: '0.5rem' }}
+                className="text-input flex-1"
               />
             </div>
             <button
@@ -229,10 +200,10 @@ export default function AddProperty() {
                   });
                 }
               }}
-              style={{ marginBottom: '1rem', padding: '0.5rem', border: '1px solid #2563eb', background: 'transparent', cursor: 'pointer', width: '100%' }}
+              className="btn-outline"
             >📍 Use my location</button>
 
-            <h3 style={{ margin: '0.5rem 0' }}>Images</h3>
+            <h3 className="section-title">Images</h3>
             <input
               type="text"
               name="image"
@@ -240,51 +211,43 @@ export default function AddProperty() {
               value={form.image}
               onChange={handleChange}
               required
-              style={{ width: '100%', marginBottom: '0.5rem', padding: '0.5rem' }}
+              className="text-input"
             />
             {form.image ? (
-              <img src={form.image} alt="Main" style={{ width: '100%', height: 140, objectFit: 'cover', borderRadius: 6, marginBottom: '1rem' }} />
+              <img src={form.image} alt="Main" className="preview-main" />
             ) : null}
             <textarea
               name="images"
               placeholder="Additional image URLs (one per line)"
               value={form.images}
               onChange={handleChange}
-              style={{ width: '100%', marginBottom: '1rem', padding: '0.5rem', minHeight: '60px' }}
+              className="textarea"
             />
             {form.images && form.images.split('\n').filter(Boolean).length > 0 && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: '1rem' }}>
+              <div className="preview-grid">
                 {form.images.split('\n').map((u, idx) => u.trim()).filter(Boolean).slice(0, 6).map((url, i) => (
-                  <img key={i} src={url} alt={`Img-${i}`} style={{ width: '100%', height: 80, objectFit: 'cover', borderRadius: 6 }} />
+                  <img key={i} src={url} alt={`Img-${i}`} className="preview-thumb" />
                 ))}
               </div>
             )}
 
-            <h3 style={{ margin: '0.5rem 0' }}>Description</h3>
+            <h3 className="section-title">Description</h3>
             <textarea
               name="description"
               placeholder="Description *"
               value={form.description}
               onChange={handleChange}
               required
-              style={{ width: '100%', marginBottom: '1rem', padding: '0.5rem', minHeight: 100 }}
+              className="textarea lg"
             />
           </div>
 
           {/* Full width actions */}
-          <div style={{ gridColumn: '1 / -1' }}>
-            {error && <p style={{ color: 'red', textAlign: 'center', marginBottom: 8 }}>{error}</p>}
+          <div className="actions">
+            {error && <p className="error-text">{error}</p>}
             <button
               type="submit"
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                backgroundColor: '#4CAF50',
-                color: 'white',
-                border: 'none',
-                cursor: 'pointer',
-                fontWeight: 600
-              }}
+              className="btn-primary"
             >
               Add Property
             </button>
