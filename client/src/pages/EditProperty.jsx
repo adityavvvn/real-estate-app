@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import './EditProperty.css';
 
 function EditProperty() {
   const { id } = useParams();
@@ -82,61 +83,96 @@ function EditProperty() {
     }
   };
 
-  if (loading) return <p style={{ textAlign: 'center' }}>Loading...</p>;
-  if (error) return <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>;
+  if (loading) return <p className="text-center">Loading...</p>;
+  if (error) return <p className="text-center" style={{ color: 'red' }}>{error}</p>;
 
   return (
-    <div className="property-page">
-      <h1>Edit Property</h1>
-      <form className="property-form" onSubmit={handleSubmit} style={{ maxWidth: 400, margin: '0 auto' }}>
-        <label>Title
-          <input name="title" value={form.title} onChange={handleChange} required />
-        </label>
-        <label>City
-          <input name="city" value={form.city} onChange={handleChange} required />
-        </label>
-        <label>BHK
-          <input name="bhk" type="number" value={form.bhk} onChange={handleChange} />
-        </label>
-        <label>Area / Locality
-          <input name="areaName" value={form.areaName} onChange={handleChange} />
-        </label>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <label style={{ flex: 1 }}>Latitude
-            <input name="lat" type="number" value={form.lat} onChange={handleChange} />
-          </label>
-          <label style={{ flex: 1 }}>Longitude
-            <input name="lng" type="number" value={form.lng} onChange={handleChange} />
-          </label>
+    <div className="edit-property-page">
+      <div className="container">
+        <h1 className="heading-1 text-center mb-4">Edit Property</h1>
+        <div className="card edit-card">
+          <form className="edit-form" onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label className="form-label" htmlFor="title">Title</label>
+              <input id="title" className="form-input" name="title" value={form.title} onChange={handleChange} required />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="city">City</label>
+              <input id="city" className="form-input" name="city" value={form.city} onChange={handleChange} required />
+            </div>
+
+            <div className="grid grid-2">
+              <div className="form-group">
+                <label className="form-label" htmlFor="bhk">BHK</label>
+                <input id="bhk" className="form-input" name="bhk" type="number" value={form.bhk} onChange={handleChange} />
+              </div>
+              <div className="form-group">
+                <label className="form-label" htmlFor="price">Price</label>
+                <input id="price" className="form-input" name="price" type="number" value={form.price} onChange={handleChange} required />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="areaName">Area / Locality</label>
+              <input id="areaName" className="form-input" name="areaName" value={form.areaName} onChange={handleChange} />
+            </div>
+
+            <div className="grid grid-2">
+              <div className="form-group">
+                <label className="form-label" htmlFor="lat">Latitude</label>
+                <input id="lat" className="form-input" name="lat" type="number" value={form.lat} onChange={handleChange} />
+              </div>
+              <div className="form-group">
+                <label className="form-label" htmlFor="lng">Longitude</label>
+                <input id="lng" className="form-input" name="lng" type="number" value={form.lng} onChange={handleChange} />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="description">Description</label>
+              <textarea id="description" className="form-input form-textarea" name="description" value={form.description} onChange={handleChange} required />
+            </div>
+
+            {form.image && (
+              <div className="form-group">
+                <img className="image-preview" src={form.image} alt="Property" />
+              </div>
+            )}
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="image">Main Image URL</label>
+              <input id="image" className="form-input" name="image" value={form.image} onChange={handleChange} required />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="images">Additional image URLs (one per line)</label>
+              <textarea
+                id="images"
+                className="form-input form-textarea"
+                name="images"
+                placeholder="https://...\nhttps://..."
+                value={form.images}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="form-group available-row">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  name="available"
+                  checked={form.available}
+                  onChange={handleChange}
+                />
+                <span>Available</span>
+              </label>
+            </div>
+
+            <button type="submit" className="btn btn-primary submit-btn">Update Property</button>
+          </form>
         </div>
-        <label>Price
-          <input name="price" type="number" value={form.price} onChange={handleChange} required />
-        </label>
-        <label>Description
-          <textarea name="description" value={form.description} onChange={handleChange} required />
-        </label>
-        {/* Optionally show image preview */}
-        {form.image && <img src={form.image} alt="Property" style={{ width: '100%', marginBottom: 8 }} />}
-        <input name="image" value={form.image} onChange={handleChange} required />
-        <textarea
-          name="images"
-          placeholder="Additional image URLs (one per line)"
-          value={form.images}
-          onChange={handleChange}
-          style={{ width: '100%', marginBottom: '1rem', padding: '0.5rem', minHeight: '60px' }}
-        />
-        <label style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
-          <input
-            type="checkbox"
-            name="available"
-            checked={form.available}
-            onChange={handleChange}
-            style={{ marginRight: 8 }}
-          />
-          Available
-        </label>
-        <button type="submit" style={{ marginTop: 12 }}>Update Property</button>
-      </form>
+      </div>
     </div>
   );
 }

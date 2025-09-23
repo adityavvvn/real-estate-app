@@ -54,9 +54,9 @@ function MyProperties() {
     <div className="property-page">
       <h1>My Properties</h1>
       {loading ? (
-        <p style={{ textAlign: 'center' }}>Loading...</p>
+        <p className="text-center">Loading...</p>
       ) : properties.length === 0 ? (
-        <p style={{ textAlign: 'center' }}>You haven't added any properties yet.</p>
+        <p className="text-center">You haven't added any properties yet.</p>
       ) : (
         <div className="property-list">
           {properties.map((prop) => (
@@ -65,9 +65,9 @@ function MyProperties() {
               <h3>{prop.title}</h3>
               <p>{prop.city} — ₹{prop.price}</p>
               <p>{prop.description}</p>
-              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                <button onClick={() => handleEdit(prop._id)} style={{ background: '#1976d2', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}>Edit</button>
-                <button onClick={() => handleDelete(prop._id)} style={{ background: '#d32f2f', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}>Delete</button>
+              <div className="card-actions">
+                <button onClick={() => handleEdit(prop._id)} className="btn btn-primary">Edit</button>
+                <button onClick={() => handleDelete(prop._id)} className="btn btn-danger">Delete</button>
               </div>
             </div>
           ))}

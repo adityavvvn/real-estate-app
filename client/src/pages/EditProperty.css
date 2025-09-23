@@ -1,0 +1,48 @@
+.edit-property-page {
+  min-height: 100vh;
+  padding: 2rem 0;
+  background: transparent;
+}
+
+.edit-card {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.image-preview {
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+}
+
+.available-row .checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.available-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
+.submit-btn {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .edit-card {
+    max-width: none;
+    margin: 0 0.5rem;
+  }
+}
+
+

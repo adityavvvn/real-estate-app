@@ -97,3 +97,15 @@ html, body {
   color: #007bff;
   margin-top: 0.5rem;
 }
+
+/* Actions bar for My Properties cards */
+.card-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.card-actions .btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
